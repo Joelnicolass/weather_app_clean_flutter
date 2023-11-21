@@ -1,12 +1,4 @@
-import 'package:clima/features/data/adapters/weather.adapter.dart';
-import 'package:clima/features/data/datasources/application/location.datasource_impl.dart';
-import 'package:clima/features/data/datasources/remote/weather.datasource_impl.dart';
-import 'package:clima/features/data/repositories/location.repository_impl.dart';
-import 'package:clima/features/data/repositories/weather.repository_impl.dart';
-import 'package:clima/features/domain/repositories/location.repository.dart';
-import 'package:clima/features/domain/usecases/get_forecast_by_location.dart';
-import 'package:clima/features/domain/usecases/get_location.dart';
-import 'package:clima/features/domain/usecases/get_weather_by_location.dart';
+import 'package:clima/features/presentation/screens/weather_screen/weather_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -16,141 +8,16 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  void initState() {
-    print('initState');
-
-    final weatherRepository = WeatherRepositoryImpl(
-      weatherAdapter: WeatherAdapter(),
-      weatherDataSource: WeatherDataSourceRemote(),
-      forecastAdapter: WeatherWeekAdapter(),
-    );
-
-    final getWeather =
-        GetWeatherByLocationUseCase(weatherRepository: weatherRepository);
-
-    final LocationRepository locationRepository = LocationRepositoryImpl(
-      locationDataSource: LocationApplicationDataSource(),
-    );
-
-    final getLocation = GetLocationUseCase(
-      repository: locationRepository,
-    );
-
-    final getForecast =
-        GetForecastByLocationUseCase(weatherRepository: weatherRepository);
-
-    getLocation.execute().then((value) {
-      value.fold(
-        (failure) => print(failure.message),
-        (location) => getWeather
-            .execute(location.latitude, location.longitude)
-            .then((value) {
-          value.fold(
-            (failure) => print(failure.message),
-            (weather) {
-              print(weather.cityName);
-              print(weather.temperatureCelsius);
-              print(weather.condition);
-            },
-          );
-        }),
-      );
-    });
-
-    getLocation.execute().then((value) {
-      value.fold(
-        (failure) => print(failure.message),
-        (location) => getForecast
-            .execute(location.latitude, location.longitude)
-            .then((value) {
-          value.fold(
-            (failure) => print(failure.message),
-            (forecast) {
-              print(forecast.cityName);
-              print(forecast.forecastDays.map((e) => e.date));
-            },
-          );
-        }),
-      );
-    });
-
-    super.initState();
-  }
-
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      home: const WeatherScreen(),
     );
   }
 }

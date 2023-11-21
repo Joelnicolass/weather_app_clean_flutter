@@ -30,6 +30,7 @@ environment:
 dependencies:
   cupertino_icons: ^1.0.2
   dartz: ^0.10.1
+  fade_scroll_app_bar: ^0.0.7
   flutter:
     sdk: flutter
   flutter_riverpod: ^2.4.6
