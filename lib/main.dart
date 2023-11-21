@@ -107,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
             (failure) => print(failure.message),
             (forecast) {
               print(forecast.cityName);
-              print(forecast.forecastDays.map((e) => print(e.maxtempC)));
+              print(forecast.forecastDays.map((e) => e.date));
             },
           );
         }),
