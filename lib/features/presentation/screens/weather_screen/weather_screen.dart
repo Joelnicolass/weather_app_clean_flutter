@@ -112,11 +112,9 @@ class ContainerView extends StatelessWidget {
     super.key,
     required ScrollController scrollController,
     required double scrollPosition,
-  })  : _scrollController = scrollController,
-        _scrollPosition = scrollPosition;
+  }) : _scrollController = scrollController;
 
   final ScrollController _scrollController;
-  final double _scrollPosition;
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +133,7 @@ class ContainerView extends StatelessWidget {
           scrollController: _scrollController,
           pinned: true,
           fadeOffset: 1200,
-          backgroundColor: Colors.blue.shade900,
+          backgroundColor: Colors.blue.shade700,
           expandedHeight: MediaQuery.of(context).size.height * 0.6,
           fadeWidget: HeaderAnimation(),
           bottomWidget: CityAndTemperature(
@@ -151,7 +149,7 @@ class ContainerView extends StatelessWidget {
               ),
             ),
           ),
-          child: ForecastList(scrollPosition: _scrollPosition),
+          child: ForecastList(),
         ));
   }
 }
