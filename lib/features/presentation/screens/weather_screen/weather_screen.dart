@@ -1,88 +1,26 @@
-import 'package:clima/features/data/adapters/location.adapter.dart';
-import 'package:clima/features/data/adapters/weather.adapter.dart';
-import 'package:clima/features/data/datasources/application/location.datasource_impl.dart';
-import 'package:clima/features/data/datasources/remote/weather.datasource_impl.dart';
-import 'package:clima/features/data/repositories/location.repository_impl.dart';
-import 'package:clima/features/data/repositories/weather.repository_impl.dart';
-import 'package:clima/features/domain/repositories/location.repository.dart';
-import 'package:clima/features/domain/usecases/get_forecast_by_location.dart';
-import 'package:clima/features/domain/usecases/get_location.dart';
-import 'package:clima/features/domain/usecases/get_weather_by_location.dart';
+import 'package:clima/features/domain/entites/location.entity.dart';
 import 'package:clima/features/presentation/components/forecast_list.dart';
 import 'package:clima/features/presentation/components/city_and_temperature.dart';
 import 'package:clima/features/presentation/components/header_animation.dart';
+import 'package:clima/features/presentation/view_models/weather_view_model.dart';
 import 'package:fade_scroll_app_bar/fade_scroll_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class WeatherScreen extends StatefulWidget {
+class WeatherScreen extends ConsumerStatefulWidget {
   const WeatherScreen({super.key});
 
   @override
-  State<WeatherScreen> createState() => _WeatherScreenState();
+  WeatherScreenState createState() => WeatherScreenState();
 }
 
-class _WeatherScreenState extends State<WeatherScreen> {
+class WeatherScreenState extends ConsumerState<WeatherScreen> {
   final ScrollController _scrollController = ScrollController();
 
   double _scrollPosition = 0;
 
   @override
   void initState() {
-    final weatherRepository = WeatherRepositoryImpl(
-      weatherAdapter: WeatherAdapter(),
-      weatherDataSource: WeatherDataSourceRemote(),
-      forecastAdapter: WeatherWeekAdapter(),
-    );
-
-    final getWeather =
-        GetWeatherByLocationUseCase(weatherRepository: weatherRepository);
-
-    final LocationRepository locationRepository = LocationRepositoryImpl(
-        locationDataSource: LocationApplicationDataSource(),
-        locationAdapter: LocationAdapter());
-
-    final getLocation = GetLocationUseCase(
-      repository: locationRepository,
-    );
-
-    final getForecast =
-        GetForecastByLocationUseCase(weatherRepository: weatherRepository);
-
-    getLocation.execute().then((value) {
-      value.fold(
-        (failure) => print(failure.message),
-        (location) => getWeather
-            .execute(location.latitude, location.longitude)
-            .then((value) {
-          value.fold(
-            (failure) => print(failure.message),
-            (weather) {
-              print(weather.cityName);
-              print(weather.temperatureCelsius);
-              print(weather.condition);
-            },
-          );
-        }),
-      );
-    });
-
-    getLocation.execute().then((value) {
-      value.fold(
-        (failure) => print(failure.message),
-        (location) => getForecast
-            .execute(location.latitude, location.longitude)
-            .then((value) {
-          value.fold(
-            (failure) => print(failure.message),
-            (forecast) {
-              print(forecast.cityName);
-              print(forecast.forecastDays.map((e) => e.date));
-            },
-          );
-        }),
-      );
-    });
-
     _scrollController.addListener(() {
       setState(() {
         _scrollPosition = _scrollController.offset;
@@ -107,7 +45,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 }
 
-class ContainerView extends StatelessWidget {
+class ContainerView extends ConsumerStatefulWidget {
   const ContainerView({
     super.key,
     required ScrollController scrollController,
@@ -117,12 +55,35 @@ class ContainerView extends StatelessWidget {
   final ScrollController _scrollController;
 
   @override
+  ContainerViewState createState() => ContainerViewState();
+}
+
+class ContainerViewState extends ConsumerState<ContainerView> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final locationAsync = ref.watch(getLocationProvider);
+    final state = ref.watch(weatherScreenViewModelProvider);
+
+    if (locationAsync.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (state.weather == null) {
+      ref.read(getWeatherByCurrentLocationProvider);
+    }
+
     return Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Colors.blue,
+              Colors.lightBlueAccent,
               Colors.blueAccent,
             ],
             begin: Alignment.topCenter,
@@ -130,15 +91,15 @@ class ContainerView extends StatelessWidget {
           ),
         ),
         child: FadeScrollAppBar(
-          scrollController: _scrollController,
+          scrollController: widget._scrollController,
           pinned: true,
           fadeOffset: 1200,
-          backgroundColor: Colors.blue.shade700,
+          backgroundColor: Colors.deepOrange.shade700,
           expandedHeight: MediaQuery.of(context).size.height * 0.6,
           fadeWidget: HeaderAnimation(),
           bottomWidget: CityAndTemperature(
-            cityName: 'Buenos Aires',
-            temperatureCelsius: 20.0,
+            cityName: state.weather?.cityName ?? 'City',
+            temperatureCelsius: 10,
           ),
           bottomWidgetHeight: MediaQuery.of(context).size.height * 0.2,
           appBarShape: const RoundedRectangleBorder(
