@@ -8,6 +8,9 @@ import 'package:clima/features/domain/repositories/location.repository.dart';
 import 'package:clima/features/domain/usecases/get_forecast_by_location.dart';
 import 'package:clima/features/domain/usecases/get_location.dart';
 import 'package:clima/features/domain/usecases/get_weather_by_location.dart';
+import 'package:clima/features/presentation/components/forecast_list.dart';
+import 'package:clima/features/presentation/components/city_and_temperature.dart';
+import 'package:clima/features/presentation/components/header_animation.dart';
 import 'package:fade_scroll_app_bar/fade_scroll_app_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -19,6 +22,10 @@ class WeatherScreen extends StatefulWidget {
 }
 
 class _WeatherScreenState extends State<WeatherScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  double _scrollPosition = 0;
+
   @override
   void initState() {
     final weatherRepository = WeatherRepositoryImpl(
@@ -76,46 +83,75 @@ class _WeatherScreenState extends State<WeatherScreen> {
       );
     });
 
+    _scrollController.addListener(() {
+      setState(() {
+        _scrollPosition = _scrollController.offset;
+      });
+    });
+
     super.initState();
   }
 
   @override
-  Widget build(BuildContext context) {
-    final ScrollController _scrollController = ScrollController();
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-    return FadeScrollAppBar(
-      scrollController: _scrollController,
-      appBarForegroundColor: Colors.amber,
-      pinned: true,
-      fadeOffset: 120,
-      expandedHeight: 250,
-      backgroundColor: Colors.white,
-      fadeWidget: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Really Good App Bar"),
-        ],
-      ),
-      bottomWidgetHeight: 40,
-      appBarShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(30),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ContainerView(
+          scrollController: _scrollController, scrollPosition: _scrollPosition),
+    );
+  }
+}
+
+class ContainerView extends StatelessWidget {
+  const ContainerView({
+    super.key,
+    required ScrollController scrollController,
+    required double scrollPosition,
+  })  : _scrollController = scrollController,
+        _scrollPosition = scrollPosition;
+
+  final ScrollController _scrollController;
+  final double _scrollPosition;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.blue,
+              Colors.blueAccent,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
-      ),
-      bottomWidget: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            height: 100,
-            decoration: BoxDecoration(
-              color: Colors.grey,
-              borderRadius: BorderRadius.circular(10),
+        child: FadeScrollAppBar(
+          scrollController: _scrollController,
+          pinned: true,
+          fadeOffset: 1200,
+          backgroundColor: Colors.blue.shade900,
+          expandedHeight: MediaQuery.of(context).size.height * 0.6,
+          fadeWidget: HeaderAnimation(),
+          bottomWidget: CityAndTemperature(
+            cityName: 'Buenos Aires',
+            temperatureCelsius: 20.0,
+          ),
+          bottomWidgetHeight: MediaQuery.of(context).size.height * 0.2,
+          appBarShape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.elliptical(
+                140,
+                20,
+              ),
             ),
           ),
-        ],
-      ),
-      child: Container(color: Color.fromARGB(255, 190, 0, 1)),
-    );
+          child: ForecastList(scrollPosition: _scrollPosition),
+        ));
   }
 }
