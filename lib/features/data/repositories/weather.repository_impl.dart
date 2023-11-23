@@ -23,8 +23,6 @@ class WeatherRepositoryImpl implements WeatherRepository {
   Future<Either<Failure, Weather>> getWeatherByLocation(
       double lat, double loc) async {
     try {
-      print('getting weather by location');
-
       final weatherModel =
           await weatherDataSource.getWeatherByLocation(lat, loc);
 
@@ -42,8 +40,6 @@ class WeatherRepositoryImpl implements WeatherRepository {
   Future<Either<Failure, Forecast>> getForecastByLocation(
       double lat, double loc) async {
     try {
-      print('getting forecast by location');
-
       final weatherWeekModel =
           await weatherDataSource.getForecastByLocation(lat, loc);
 

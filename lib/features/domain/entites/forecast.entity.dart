@@ -1,4 +1,6 @@
 class ForecastDay {
+  final String day;
+  final String condition;
   final DateTime date;
   final double maxtempC;
   final double mintempC;
@@ -9,6 +11,8 @@ class ForecastDay {
     required this.maxtempC,
     required this.mintempC,
     required this.avgtempC,
+    required this.day,
+    required this.condition,
   });
 }
 

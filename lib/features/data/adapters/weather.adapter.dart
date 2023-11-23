@@ -3,6 +3,7 @@ import 'package:clima/features/data/models/weather.model.dart';
 import 'package:clima/features/data/models/weather_week.model.dart';
 import 'package:clima/features/domain/entites/forecast.entity.dart';
 import 'package:clima/features/domain/entites/weather.entity.dart';
+import 'package:clima/helpers/helper.dart';
 
 class WeatherAdapter implements Adapter<WeatherModel, Weather> {
   @override
@@ -25,11 +26,15 @@ class WeatherWeekAdapter implements Adapter<WeatherWeekModel, Forecast> {
     return Forecast(
       cityName: model.location.name,
       forecastDays: model.forecast.forecastday
-          .map((e) => (ForecastDay(
-              avgtempC: e.day.avgtempC.toDouble(),
-              maxtempC: e.day.maxtempC.toDouble(),
-              mintempC: e.day.mintempC.toDouble(),
-              date: e.date)))
+          .map(
+            (e) => (ForecastDay(
+                condition: e.day.condition.text,
+                day: getDayName(e.date.weekday),
+                avgtempC: e.day.avgtempC.toDouble(),
+                maxtempC: e.day.maxtempC.toDouble(),
+                mintempC: e.day.mintempC.toDouble(),
+                date: e.date)),
+          )
           .toList(),
     );
   }

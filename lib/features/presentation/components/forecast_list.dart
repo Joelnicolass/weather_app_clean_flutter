@@ -1,48 +1,59 @@
+import 'package:clima/features/presentation/view_models/weather_view_model.dart';
+import 'package:clima/helpers/helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 
-class ForecastList extends StatelessWidget {
+class ForecastList extends ConsumerWidget {
   const ForecastList({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
+    final weatherViewModel = ref.watch(weatherNotifierProvider);
+
+    if (weatherViewModel.forecast == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return Column(
       children: [
         Expanded(
-          child: ListView(
-            shrinkWrap: true,
-            physics: ClampingScrollPhysics(),
-            children: [
-              ForecastItem(),
-              ForecastItem(),
-              ForecastItem(),
-              ForecastItem(),
-              ForecastItem(),
-              ForecastItem(),
-              /*  Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  ForecastItem(),
-                  ForecastItem(),
-                  ForecastItem(),
-                  ForecastItem(),
-                  ForecastItem(),
-                  ForecastItem(),
-                ],
-              ), */
-            ],
-          ),
-        ),
+            child: ListView(
+                shrinkWrap: true,
+                physics: ClampingScrollPhysics(),
+                children: weatherViewModel.forecast!.forecastDays
+                    .map(
+                      (e) => ForecastItem(
+                          condition: e.condition,
+                          day: e.day.substring(0, 3),
+                          tempMax: e.maxtempC,
+                          tempMin: e.mintempC,
+                          date: formateDate(e.date)),
+                    )
+                    .toList())),
       ],
     );
   }
 }
 
 class ForecastItem extends StatelessWidget {
+  final String day;
+  final double tempMax;
+  final double tempMin;
+  final String condition;
+  final String date;
+
   const ForecastItem({
     super.key,
+    required this.day,
+    required this.tempMax,
+    required this.tempMin,
+    required this.condition,
+    required this.date,
   });
 
   @override
@@ -60,7 +71,7 @@ class ForecastItem extends StatelessWidget {
           height: MediaQuery.of(context).size.height * 0.16,
           width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
-            color: Colors.blue.shade700,
+            color: getBackgroundColorFromTemperature(tempMax),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Padding(
@@ -75,21 +86,21 @@ class ForecastItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Lunes',
+                  '$day - $date',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
                 Text(
-                  '20 °C',
+                  '$tempMax °C',
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
                 Text(
-                  '17 °C',
+                  '$tempMin °C',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -108,7 +119,7 @@ class ForecastItem extends StatelessWidget {
             alignment: Alignment.topRight,
             height: 200,
             child: Lottie.asset(
-              'assets/lottie/tormenta.json',
+              getIconFromCondition(condition),
               fit: BoxFit.fitWidth,
             ),
           ),
